@@ -2,7 +2,7 @@ import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 
-public class Server extends JFrame implements ActionListener {
+public class Client extends JFrame implements ActionListener {
 
     /**
      *
@@ -13,7 +13,7 @@ public class Server extends JFrame implements ActionListener {
     JButton send_button;
     JTextArea chat_textarea;
 
-    Server() {
+    Client() {
 
         upper_panel = new JPanel();
         upper_panel.setLayout(null);
@@ -96,7 +96,7 @@ public class Server extends JFrame implements ActionListener {
     }
 
     public static void main(final String[] args) {
-        new Server().setVisible(true);
+        new Client().setVisible(true);
 
     }
 
