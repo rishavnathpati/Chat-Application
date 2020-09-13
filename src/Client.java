@@ -1,6 +1,8 @@
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
+import java.io.*;
+import java.net.Socket;
 
 public class Client extends JFrame implements ActionListener {
 
@@ -11,7 +13,8 @@ public class Client extends JFrame implements ActionListener {
     JPanel upper_panel;
     JTextField text_field;
     JButton send_button;
-    JTextArea chat_textarea;
+    static JTextArea chat_textarea;
+    static DataOutputStream dos;
 
     Client() {
 
@@ -35,7 +38,7 @@ public class Client extends JFrame implements ActionListener {
         });
 
         // PROFILE PICTURE
-        ImageIcon profile_picture = new ImageIcon(ClassLoader.getSystemResource("icons/1.png"));
+        ImageIcon profile_picture = new ImageIcon(ClassLoader.getSystemResource("icons/2.png"));
         final Image i2 = profile_picture.getImage().getScaledInstance(60, 60, Image.SCALE_DEFAULT);
         profile_picture = new ImageIcon(i2);
         final JLabel profile_picture_label = new JLabel(profile_picture);
@@ -43,7 +46,7 @@ public class Client extends JFrame implements ActionListener {
         upper_panel.add(profile_picture_label);// Adding image profile_picture above panel upper_panel
 
         // NAME
-        JLabel user_name = new JLabel("Rishav");
+        JLabel user_name = new JLabel("User 2");
         user_name.setFont(new Font("SAN_SERIF", Font.BOLD, 18));
         user_name.setForeground(Color.WHITE);
         user_name.setBounds(110, 15, 100, 18);
@@ -84,19 +87,43 @@ public class Client extends JFrame implements ActionListener {
 
         setLayout(null);
         setSize(450, 700);
-        setLocation(400, 200);
+        setLocation(1100, 200);
         setUndecorated(true);
         setVisible(true);
     }
 
     public void actionPerformed(ActionEvent ae) {
-        String message = text_field.getText();
-        chat_textarea.setText(chat_textarea.getText().toString() + "\n" + message);
-        text_field.setText("");
+
+        try {
+            String message = text_field.getText();
+            chat_textarea.setText(chat_textarea.getText().toString() + "\n" + message);
+            dos.writeUTF(message);
+            text_field.setText("");
+
+        } catch (Exception e) {
+
+        }
+
     }
 
     public static void main(final String[] args) {
         new Client().setVisible(true);
+        String message = "";
+
+        try {
+            Socket s = new Socket("localhost", 11111);
+            DataInputStream dis = new DataInputStream(s.getInputStream());
+            dos = new DataOutputStream(s.getOutputStream());
+
+            message = dis.readUTF();
+            chat_textarea.setText(chat_textarea.getText().toString() + "\n" + message);
+
+            s.close();
+            dis.close();
+            dos.close();
+        } catch (Exception e) {
+
+        }
 
     }
 

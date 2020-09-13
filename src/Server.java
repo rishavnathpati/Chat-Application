@@ -1,6 +1,9 @@
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
+import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 public class Server extends JFrame implements ActionListener {
 
@@ -11,7 +14,10 @@ public class Server extends JFrame implements ActionListener {
     JPanel upper_panel;
     JTextField text_field;
     JButton send_button;
-    JTextArea chat_textarea;
+    static JTextArea chat_textarea;
+    static ServerSocket skt;
+    static Socket s;
+    static DataOutputStream dos;
 
     Server() {
 
@@ -91,12 +97,41 @@ public class Server extends JFrame implements ActionListener {
 
     public void actionPerformed(ActionEvent ae) {
         String message = text_field.getText();
-        chat_textarea.setText(chat_textarea.getText().toString() + "\n" + message);
-        text_field.setText("");
+        try {
+            chat_textarea.setText(chat_textarea.getText().toString() + "\n" + message);
+            dos.writeUTF(message);
+            text_field.setText("");
+            
+        } 
+        catch (Exception e) {
+            //TODO: handle exception
+        }
     }
 
     public static void main(final String[] args) {
         new Server().setVisible(true);
+        String message;
+
+        try {
+            skt = new ServerSocket(11111);
+            s = skt.accept();
+
+            DataInputStream dis = new DataInputStream(s.getInputStream());
+            dos = new DataOutputStream(s.getOutputStream());
+
+            message = dis.readUTF();
+            chat_textarea.setText(chat_textarea.getText().toString() + "\n" + message);
+
+            skt.close();
+            s.close();
+            dis.close();
+            dos.close();
+
+        }
+
+        catch (Exception e) {
+
+        }
 
     }
 
