@@ -9,6 +9,9 @@ public class Server extends JFrame implements ActionListener {
      */
     private static final long serialVersionUID = 1L;
     JPanel upper_panel;
+    JTextField text_field;
+    JButton send_button;
+    JTextArea chat_textarea;
 
     Server() {
 
@@ -26,8 +29,7 @@ public class Server extends JFrame implements ActionListener {
         back_button_label.setBounds(5, 17, 30, 30);
         upper_panel.add(back_button_label);// Adding image back_button above panel upper_panel
         back_button_label.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(final MouseEvent ae)
-            {
+            public void mouseClicked(final MouseEvent ae) {
                 System.exit(0);
             }
         });
@@ -54,11 +56,24 @@ public class Server extends JFrame implements ActionListener {
         user_status.setBounds(110, 35, 100, 20);
         upper_panel.add(user_status);
 
-        setLayout(null);
+        // TEXT FIELD
+        text_field = new JTextField();
+        text_field.setBounds(5, 655, 330, 40);
+        text_field.setFont(new Font("SAN_SERIF", Font.PLAIN, 20));
+        add(text_field);
 
-        getContentPane().setBackground(Color.YELLOW);
+        // SEND BUTTON
+        send_button = new JButton("Send");
+        send_button.setBounds(340, 655, 100, 40);
+        send_button.setBackground(new Color(7, 94, 84));
+        send_button.setForeground(Color.WHITE);
+        send_button.setFont(new Font("SAN_SERIF", Font.PLAIN, 20));
+        add(send_button);
+
+        setLayout(null);
         setSize(450, 700);
         setLocation(400, 200);
+        setUndecorated(true);
         setVisible(true);
     }
 
