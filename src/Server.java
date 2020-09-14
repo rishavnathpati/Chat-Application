@@ -18,8 +18,12 @@ public class Server extends JFrame implements ActionListener {
     static ServerSocket skt;
     static Socket s;
     static DataOutputStream dos;
+    static DataInputStream dis;
+
+    Boolean typing = false;
 
     Server() {
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         upper_panel = new JPanel();
         upper_panel.setLayout(null);
@@ -55,16 +59,25 @@ public class Server extends JFrame implements ActionListener {
         user_name.setBounds(110, 15, 100, 18);
         upper_panel.add(user_name);// Adding image
 
-        // STATUS
+        // ACTIVE STATUS
         final JLabel user_status = new JLabel("Active Now");
         user_status.setFont(new Font("SAN_SERIF", Font.PLAIN, 15));
         user_status.setForeground(Color.WHITE);
         user_status.setBounds(110, 35, 100, 20);
         upper_panel.add(user_status);
 
+        Timer t = new Timer(1, new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                if (!typing) {
+                    user_status.setText("Active Now");
+                }
+            }
+        });
+        t.setInitialDelay(2000);
+
         // CHAT TEXT AREA
         chat_textarea = new JTextArea();
-        chat_textarea.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+        // chat_textarea.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         chat_textarea.setLineWrap(true);
         chat_textarea.setWrapStyleWord(true);
         chat_textarea.setBounds(5, 75, 440, 575);
@@ -78,6 +91,21 @@ public class Server extends JFrame implements ActionListener {
         text_field.setBounds(5, 655, 330, 40);
         text_field.setFont(new Font("SAN_SERIF", Font.PLAIN, 20));
         add(text_field);
+
+        text_field.addKeyListener(new KeyAdapter() {
+            public void keyPressed(KeyEvent e) {
+                user_status.setText("typing....");
+                t.stop();
+                typing = true;
+            }
+
+            public void keyReleased(KeyEvent e) {
+                typing = false;
+                if (!t.isRunning()) {
+                    t.start();
+                }
+            }
+        });
 
         // SEND BUTTON
         send_button = new JButton("Send");
@@ -96,40 +124,38 @@ public class Server extends JFrame implements ActionListener {
     }
 
     public void actionPerformed(ActionEvent ae) {
-        String message = text_field.getText();
+
         try {
-            chat_textarea.setText(chat_textarea.getText().toString() + "\n" + message);
-            dos.writeUTF(message);
+            String message = text_field.getText();
+            chat_textarea.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+            chat_textarea.setText(chat_textarea.getText() + "\n" + message);
             text_field.setText("");
-            
-        } 
-        catch (Exception e) {
-            //TODO: handle exception
+            dos.writeUTF(message);
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
     }
 
     public static void main(final String[] args) {
         new Server().setVisible(true);
-        String message;
+        String message = "";
 
         try {
             skt = new ServerSocket(11111);
             s = skt.accept();
 
-            DataInputStream dis = new DataInputStream(s.getInputStream());
+            dis = new DataInputStream(s.getInputStream());
             dos = new DataOutputStream(s.getOutputStream());
 
-            message = dis.readUTF();
-            chat_textarea.setText(chat_textarea.getText().toString() + "\n" + message);
+            while (true) {
+                message = dis.readUTF();
+                chat_textarea.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+                chat_textarea.setText(chat_textarea.getText() + "\n" + message);
+                System.out.println(message);
+            }
 
-            skt.close();
-            s.close();
-            dis.close();
-            dos.close();
-
-        }
-
-        catch (Exception e) {
+        } catch (Exception e) {
 
         }
 

@@ -14,7 +14,11 @@ public class Client extends JFrame implements ActionListener {
     JTextField text_field;
     JButton send_button;
     static JTextArea chat_textarea;
+    static Socket s;
     static DataOutputStream dos;
+    static DataInputStream dis;
+
+    Boolean typing = false;
 
     Client() {
 
@@ -52,16 +56,25 @@ public class Client extends JFrame implements ActionListener {
         user_name.setBounds(110, 15, 100, 18);
         upper_panel.add(user_name);// Adding image
 
-        // STATUS
+        // ACTIVE STATUS
         final JLabel user_status = new JLabel("Active Now");
         user_status.setFont(new Font("SAN_SERIF", Font.PLAIN, 15));
         user_status.setForeground(Color.WHITE);
         user_status.setBounds(110, 35, 100, 20);
         upper_panel.add(user_status);
 
+        Timer t = new Timer(1, new ActionListener() {
+            public void actionPerformed(ActionEvent ae) {
+                if (!typing) {
+                    user_status.setText("Active Now");
+                }
+            }
+        });
+        t.setInitialDelay(2000);
+
         // CHAT TEXT AREA
         chat_textarea = new JTextArea();
-        chat_textarea.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+        // chat_textarea.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         chat_textarea.setLineWrap(true);
         chat_textarea.setWrapStyleWord(true);
         chat_textarea.setBounds(5, 75, 440, 575);
@@ -75,6 +88,21 @@ public class Client extends JFrame implements ActionListener {
         text_field.setBounds(5, 655, 330, 40);
         text_field.setFont(new Font("SAN_SERIF", Font.PLAIN, 20));
         add(text_field);
+
+        text_field.addKeyListener(new KeyAdapter() {
+            public void keyPressed(KeyEvent e) {
+                user_status.setText("typing....");
+                t.stop();
+                typing = true;
+            }
+
+            public void keyReleased(KeyEvent e) {
+                typing = false;
+                if (!t.isRunning()) {
+                    t.start();
+                }
+            }
+        });
 
         // SEND BUTTON
         send_button = new JButton("Send");
@@ -93,34 +121,32 @@ public class Client extends JFrame implements ActionListener {
     }
 
     public void actionPerformed(ActionEvent ae) {
-
+        String message = text_field.getText();
         try {
-            String message = text_field.getText();
-            chat_textarea.setText(chat_textarea.getText().toString() + "\n" + message);
-            dos.writeUTF(message);
+            chat_textarea.setText(chat_textarea.getText() + "\n" + message);
+            chat_textarea.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
             text_field.setText("");
+            dos.writeUTF(message);
 
         } catch (Exception e) {
-
         }
-
     }
 
-    public static void main(final String[] args) {
+    public static void main(final String[] args) throws IOException {
         new Client().setVisible(true);
-        String message = "";
 
         try {
-            Socket s = new Socket("localhost", 11111);
-            DataInputStream dis = new DataInputStream(s.getInputStream());
+            s = new Socket("localhost", 11111);
+
+            dis = new DataInputStream(s.getInputStream());
             dos = new DataOutputStream(s.getOutputStream());
-
-            message = dis.readUTF();
-            chat_textarea.setText(chat_textarea.getText().toString() + "\n" + message);
-
-            s.close();
-            dis.close();
-            dos.close();
+            String message = "";
+            while (true) {
+                message = dis.readUTF();
+                chat_textarea.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+                chat_textarea.setText(chat_textarea.getText() + "\n" + message);
+                System.out.println(message);
+            }
         } catch (Exception e) {
 
         }
